@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, maximum-scale=1.5">
   <title>在写了在写了 2.0 Pro</title>
-  <!-- 不变的库依赖 -->
+  <!-- 库依赖 -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
   <style>
-    /* ========== 样式部分（保持不变） ========== */
+    /* ========== 全局样式（不变） ========== */
     :root {
       --bg: #f5f3f0; --card: #ffffff; --card-alt: #faf8f5; --accent: #b39264; --accent2: #7b9c6e;
       --text: #2e2a24; --sub: #8b7a62; --border: #e7dfd4; --danger: #c06a55; --gold: #ffd700;
@@ -44,6 +44,7 @@
     .dot.mint { background: linear-gradient(135deg, #4db8a5, #c8e6df); }
     .dot.sakura { background: linear-gradient(135deg, #e8a0b4, #fce4ec); }
     .dot.blue { background: linear-gradient(135deg, #5b8db8, #c8d8e6); }
+    /* 音乐播放器 */
     .music-player { position: relative; display: flex; align-items: center; }
     .music-btn { width: 38px; height: 38px; border-radius: 50%; border: 1.5px solid var(--border); background: var(--card-alt); cursor: pointer; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; transition: all 0.2s; color: var(--text); }
     .music-btn:hover { background: var(--accent); color: white; border-color: var(--accent); }
@@ -56,6 +57,7 @@
     .music-track:hover { background: var(--card-alt); }
     .music-track.active { background: var(--accent); color: white; }
     .music-now-playing { font-size: 0.7rem; color: var(--sub); text-align: center; padding: 0.3rem 0; border-top: 1px solid var(--border); margin-top: 0.3rem; }
+    /* 项目切换提示 */
     .project-switch-toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-120px); background: var(--accent); color: white; padding: 0.8rem 1.5rem; border-radius: 2rem; font-weight: 600; font-size: 0.95rem; z-index: 9999; box-shadow: 0 8px 24px rgba(0,0,0,0.2); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); pointer-events: none; display: flex; align-items: center; gap: 0.5rem; }
     .project-switch-toast.show { transform: translateX(-50%) translateY(0); }
     .toast-icon { font-size: 1.5rem; animation: toastBounce 0.6s ease-in-out infinite; }
@@ -178,6 +180,9 @@
     .image-upload-btn { cursor: pointer; display: inline-flex; align-items: center; gap: 0.3rem; }
     .image-preview { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.5rem; }
     .image-preview img { width: 80px; height: 80px; object-fit: cover; border-radius: 0.5rem; border: 2px solid var(--border); }
+    /* 网易云播放器样式 */
+    .netease-player-wrapper { text-align: center; margin-top: 0.5rem; }
+    .netease-player-wrapper iframe { border-radius: 0.5rem; }
   </style>
 </head>
 <body>
@@ -185,40 +190,39 @@
     <div class="header-row">
       <h1>✍️ 在写了在写了 <span id="versionTag">2.0 Pro</span></h1>
       <div class="header-actions" style="position:relative;">
-       <!-- ========== 网易云音乐歌单播放器 ========== -->
-<div class="music-player" style="position:relative;">
-  <button class="music-btn" id="musicBtn" title="写作BGM">🎵</button>
-  <div class="music-dropdown" id="musicDropdown">
-    <h3>🎵 写作BGM歌单</h3>
-    <div id="musicTrackList">
-      <div class="music-track active" data-index="0">
-        <span class="track-icon">🎵</span>
-        <span class="track-name">Song 1</span>
-        <span class="track-desc">轻音乐</span>
-      </div>
-      <div class="music-track" data-index="1">
-        <span class="track-icon">🎵</span>
-        <span class="track-name">Song 2</span>
-        <span class="track-desc">轻音乐</span>
-      </div>
-      <div class="music-track" data-index="2">
-        <span class="track-icon">🎵</span>
-        <span class="track-name">Song 3</span>
-        <span class="track-desc">轻音乐</span>
-      </div>
-      <div class="music-track" data-index="3">
-        <span class="track-icon">🎵</span>
-        <span class="track-name">Song 4</span>
-        <span class="track-desc">轻音乐</span>
-      </div>
-    </div>
-    <div class="music-now-playing" id="musicNowPlaying">选择歌曲开始播放</div>
-    <!-- 网易云iframe播放器 -->
-    <div style="text-align:center;margin-top:0.5rem;">
-      <iframe id="neteasePlayer" frameborder="no" border="0" marginwidth="0" marginheight="0" width="260" height="52" src="https://music.163.com/outchain/player?type=2&id=2742628669&auto=0&height=32"></iframe>
-    </div>
-  </div>
-</div>
+        <!-- ========== 网易云音乐播放器 ========== -->
+        <div class="music-player">
+          <button class="music-btn" id="musicBtn" title="写作BGM">🎵</button>
+          <div class="music-dropdown" id="musicDropdown">
+            <h3>🎵 写作BGM歌单</h3>
+            <div id="musicTrackList">
+              <div class="music-track active" data-index="0">
+                <span class="track-icon">🎵</span>
+                <span class="track-name">Song 1</span>
+                <span class="track-desc">轻音乐</span>
+              </div>
+              <div class="music-track" data-index="1">
+                <span class="track-icon">🎵</span>
+                <span class="track-name">Song 2</span>
+                <span class="track-desc">轻音乐</span>
+              </div>
+              <div class="music-track" data-index="2">
+                <span class="track-icon">🎵</span>
+                <span class="track-name">Song 3</span>
+                <span class="track-desc">轻音乐</span>
+              </div>
+              <div class="music-track" data-index="3">
+                <span class="track-icon">🎵</span>
+                <span class="track-name">Song 4</span>
+                <span class="track-desc">轻音乐</span>
+              </div>
+            </div>
+            <div class="music-now-playing" id="musicNowPlaying">选择歌曲开始播放</div>
+            <div class="netease-player-wrapper">
+              <iframe id="neteasePlayer" frameborder="no" border="0" marginwidth="0" marginheight="0" width="260" height="52" src="https://music.163.com/outchain/player?type=2&id=2742628669&auto=0&height=32"></iframe>
+            </div>
+          </div>
+        </div>
         <button class="icon-btn" id="syncMenuBtn" title="跨设备同步">🔄</button>
         <button class="icon-btn" id="themeMenuBtn" title="切换主题">🎨</button>
         <div class="dropdown-menu" id="themeDropdown">
@@ -321,12 +325,13 @@
       <div class="card text-sm" id="landmarkDesc"></div>
     </div>
     <div class="map-tooltip" id="mapTooltip"></div>
-    <!-- 其他标签页（省略，保持完整结构不变） -->
+    <!-- 表情日记 -->
     <div class="tab-content" id="tab-mood">
       <h2>😊 表情日记</h2>
       <div class="card"><div class="emoji-grid" id="emojiGrid"><span class="emoji-option" data-mood="😊">😊</span><span class="emoji-option" data-mood="😫">😫</span><span class="emoji-option" data-mood="😴">😴</span><span class="emoji-option" data-mood="🎉">🎉</span><span class="emoji-option" data-mood="🤯">🤯</span><span class="emoji-option" data-mood="☕">☕</span><span class="emoji-option" data-mood="😤">😤</span><span class="emoji-option" data-mood="🤩">🤩</span><span class="emoji-option" data-mood="😭">😭</span><span class="emoji-option" data-mood="💪">💪</span></div><textarea id="moodNote" rows="2" placeholder="备注..."></textarea><button class="btn btn-sm" id="saveMoodBtn" style="margin-top:0.5rem;">💾 保存心情</button></div>
       <div class="card"><strong style="color:var(--text);">📅 心情日历</strong><div class="mood-history" id="moodHistory"></div></div>
     </div>
+    <!-- 灵感随记 -->
     <div class="tab-content" id="tab-notes">
       <h2>💡 灵感随记</h2>
       <div class="card">
@@ -340,10 +345,12 @@
       </div>
       <div id="notesList"></div>
     </div>
+    <!-- 写作人格 -->
     <div class="tab-content" id="tab-personality">
       <h2>🧠 写作人格分析</h2>
       <div class="personality-card"><div class="personality-type" id="personalityType">—</div><div id="personalityDesc" style="color:var(--sub);">开始写作以解锁人格分析</div><div style="margin-top:1rem;text-align:left;"><div class="stat-row"><span>📊 波动指数</span><span id="statVolatility">—</span></div><div class="stat-row"><span>🔥 连续记录</span><span id="statMaxStreak">—</span></div><div class="stat-row"><span>⚡ 爆发比例</span><span id="statBurst">—</span></div><div class="stat-row"><span>📈 日均新增</span><span id="statAvgDelta">—</span></div></div></div>
     </div>
+    <!-- 论文生日 -->
     <div class="tab-content" id="tab-birthday">
       <h2>🎂 论文生日 / 字数纪念日</h2>
       <div class="card"><p>🎂 开写日：<strong id="birthdayDate">—</strong> | 已诞生：<strong id="birthdayAge">—</strong></p><p>📝 首条记录：<strong id="birthdayFirst">—</strong> | 当前总字数：<strong id="birthdayCurrent">—</strong></p><p>🚀 增长：<strong id="birthdayGrowth">—</strong></p></div>
@@ -361,7 +368,7 @@
     </div>
     <div class="signature">Made with ☕ and ❤️ by KC Ligh</div>
   </div>
-  <!-- 宠物面板 -->
+  <!-- 宠物 -->
   <div class="pet-panel" id="petPanel">
     <div class="pet-bubble" id="petBubble"></div>
     <div class="pet-main" id="petEmoji" title="点击互动">🐱</div>
@@ -390,7 +397,7 @@
       // ========== 数据与状态 ==========
       const STORAGE_KEY = 'thesis_complete_final';
       const PET_KEY = 'thesis_pet_final';
-      const FIXED_VERSION = '2.0'; // 版本号固定为2.0
+      const FIXED_VERSION = '2.0';
 
       let projects = {};
       let activeProjectId = 'default';
@@ -403,14 +410,16 @@
       const PET_TYPES = ['🐱', '🐶', '🐰', '🐼', '🦊', '🐨', '🐸', '🐙', '🦉', '🐧'];
       const PROJECT_COLORS = ['#b39264', '#e94560', '#4db8a5', '#e8a0b4', '#5b8db8', '#f39c12', '#9b59b6', '#1abc9c', '#e74c3c', '#3498db'];
       let gameActive = false, gameScore = 0, gameInterval = null;
-      let currentTrack = null, isPlaying = false, noiseInterval = null;
 
-      // 音乐曲目（尝试使用简单的旋律音效替代沙沙声）
-      const MUSIC_TRACKS = [
-        { name: '简单钢琴旋律', icon: '🎹', desc: '舒缓心情', type: 'melody', melody: [262, 294, 330, 349, 392, 349, 330, 294] },
-        { name: '柔和风铃声', icon: '🎐', desc: '清新放松', type: 'melody', melody: [523, 587, 659, 698, 784, 880, 988, 1047] },
-        { name: '安静和弦', icon: '🎵', desc: '深度专注', type: 'chord', chords: [[261, 329, 392], [293, 349, 440], [329, 392, 493], [349, 440, 523]] }
+      // ========== 网易云音乐歌单 ==========
+      const NETEASE_SONGS = [
+        { id: '2742628669', name: 'Song 1', icon: '🎵', desc: '轻音乐' },
+        { id: '1830664549', name: 'Song 2', icon: '🎵', desc: '轻音乐' },
+        { id: '5248060', name: 'Song 3', icon: '🎵', desc: '轻音乐' },
+        { id: '1349964901', name: 'Song 4', icon: '🎵', desc: '轻音乐' }
       ];
+      let currentTrackIndex = 0;
+      let isPlaying = false;
 
       const PET_SPEECHES = {
         idle: ['今天写论文了吗？', '戳我玩一会儿~', '加油哦！', '在写了在写了...'],
@@ -444,7 +453,6 @@
       function loadData() {
         try { const d = JSON.parse(localStorage.getItem(STORAGE_KEY)); if (d) { projects = d.projects || {}; activeProjectId = d.activeProjectId || 'default'; currentTheme = d.currentTheme || 'coffee'; unlockedAchievements = d.unlockedAchievements || []; if (Object.keys(projects).length === 0) createProject('default', '默认论文'); } } catch (e) { createProject('default', '默认论文'); }
         try { const p = JSON.parse(localStorage.getItem(PET_KEY)); if (p) petData = Object.assign(petData, p); } catch (e) {}
-        // 固定版本号显示
         document.getElementById('versionTag').textContent = FIXED_VERSION + ' Pro';
       }
 
@@ -559,82 +567,65 @@
       function refreshBirthday() { const f=getTSD()||getFirstRecordDate();document.getElementById('birthdayDate').textContent=f||'—';if(f){const d=getDaysSinceStart();document.getElementById('birthdayAge').textContent=Math.floor(d/30)+'个月'+(d%30)+'天';document.getElementById('birthdayFirst').textContent=(getR()[f]||0).toLocaleString()+'字';document.getElementById('birthdayCurrent').textContent=getTotalWords().toLocaleString()+'字';document.getElementById('birthdayGrowth').textContent=(getTotalWords()-(getR()[f]||0)).toLocaleString()+'字';}const tw=Math.max(1,getTW());document.getElementById('milestoneList').innerHTML=[0.05,0.1,0.25,0.5,0.75,1,1.25,1.5].map(r=>{const v=Math.round(tw*r);const rch=getTotalWords()>=v;return`<span style="display:inline-block;margin:0.2rem;padding:0.2rem 0.5rem;border-radius:0.8rem;font-size:0.7rem;background:${rch?'var(--gold)':'var(--border)'};color:${rch?'#5e3a00':'var(--sub)'};">${v.toLocaleString()} ${rch?'✅':'🔒'}</span>`;}).join(''); }
 
       // ========== 网易云音乐控制 ==========
-const NETEASE_SONGS = [
-  { id: '2742628669', name: 'Song 1', icon: '🎵', desc: '轻音乐' },
-  { id: '1830664549', name: 'Song 2', icon: '🎵', desc: '轻音乐' },
-  { id: '5248060', name: 'Song 3', icon: '🎵', desc: '轻音乐' },
-  { id: '1349964901', name: 'Song 4', icon: '🎵', desc: '轻音乐' }
-];
-
-let currentTrackIndex = 0;
-let isPlaying = false;
-
-function playTrack(index) {
-  currentTrackIndex = index;
-  isPlaying = true;
-  const song = NETEASE_SONGS[index];
-  // 更新iframe播放器
-  const iframe = document.getElementById('neteasePlayer');
-  if (iframe) {
-    iframe.src = `https://music.163.com/outchain/player?type=2&id=${song.id}&auto=1&height=32`;
-  }
-  updateMusicUI();
-  document.getElementById('musicNowPlaying').textContent = '正在播放：' + song.icon + ' ' + song.name;
-}
-
-function stopMusic() {
-  isPlaying = false;
-  const iframe = document.getElementById('neteasePlayer');
-  if (iframe) {
-    // 停止播放：加载一个空白页面
-    iframe.src = 'about:blank';
-    // 重新加载默认歌曲但不自动播放
-    setTimeout(() => {
-      iframe.src = `https://music.163.com/outchain/player?type=2&id=${NETEASE_SONGS[currentTrackIndex].id}&auto=0&height=32`;
-    }, 100);
-  }
-  updateMusicUI();
-  document.getElementById('musicNowPlaying').textContent = '选择歌曲开始播放';
-}
-
-function updateMusicUI() {
-  const btn = document.getElementById('musicBtn');
-  if (isPlaying) {
-    btn.classList.add('playing');
-  } else {
-    btn.classList.remove('playing');
-  }
-  document.querySelectorAll('#musicTrackList .music-track').forEach((el, i) => {
-    el.classList.toggle('active', i === currentTrackIndex && isPlaying);
-  });
-}
-
-function renderMusicTracks() {
-  const list = document.getElementById('musicTrackList');
-  list.innerHTML = NETEASE_SONGS.map((song, i) => `
-    <div class="music-track ${i === currentTrackIndex && isPlaying ? 'active' : ''}" data-index="${i}">
-      <span class="track-icon">${song.icon}</span>
-      <span class="track-name">${song.name}</span>
-      <span class="track-desc">${song.desc}</span>
-    </div>
-  `).join('');
-  
-  list.querySelectorAll('.music-track').forEach(el => {
-    el.addEventListener('click', function(e) {
-      e.stopPropagation();
-      const idx = parseInt(this.dataset.index);
-      if (idx === currentTrackIndex && isPlaying) {
-        stopMusic();
-      } else {
-        playTrack(idx);
+      function playTrack(index) {
+        currentTrackIndex = index;
+        isPlaying = true;
+        const song = NETEASE_SONGS[index];
+        const iframe = document.getElementById('neteasePlayer');
+        if (iframe) {
+          iframe.src = `https://music.163.com/outchain/player?type=2&id=${song.id}&auto=1&height=32`;
+        }
+        updateMusicUI();
+        document.getElementById('musicNowPlaying').textContent = '正在播放：' + song.icon + ' ' + song.name;
       }
-    });
-  });
-}
+
+      function stopMusic() {
+        isPlaying = false;
+        const iframe = document.getElementById('neteasePlayer');
+        if (iframe) {
+          iframe.src = 'about:blank';
+          setTimeout(() => {
+            iframe.src = `https://music.163.com/outchain/player?type=2&id=${NETEASE_SONGS[currentTrackIndex].id}&auto=0&height=32`;
+          }, 100);
+        }
+        updateMusicUI();
+        document.getElementById('musicNowPlaying').textContent = '选择歌曲开始播放';
+      }
+
+      function updateMusicUI() {
+        const btn = document.getElementById('musicBtn');
+        if (isPlaying) btn.classList.add('playing'); else btn.classList.remove('playing');
+        document.querySelectorAll('#musicTrackList .music-track').forEach((el, i) => {
+          el.classList.toggle('active', i === currentTrackIndex && isPlaying);
+        });
+      }
+
+      function renderMusicTracks() {
+        const list = document.getElementById('musicTrackList');
+        list.innerHTML = NETEASE_SONGS.map((song, i) => `
+          <div class="music-track ${i === currentTrackIndex && isPlaying ? 'active' : ''}" data-index="${i}">
+            <span class="track-icon">${song.icon}</span>
+            <span class="track-name">${song.name}</span>
+            <span class="track-desc">${song.desc}</span>
+          </div>
+        `).join('');
+        list.querySelectorAll('.music-track').forEach(el => {
+          el.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const idx = parseInt(this.dataset.index);
+            if (idx === currentTrackIndex && isPlaying) {
+              stopMusic();
+            } else {
+              playTrack(idx);
+            }
+            document.getElementById('musicDropdown').classList.remove('show');
+          });
+        });
+      }
 
       function refreshAll() { refreshDailyTab(); renderChapters(); refreshGarden(); refreshAdventure(); refreshMoodDiary(); renderNotes(); refreshPersonality(); refreshBirthday(); updateDocLinkUI(); updatePetStats(); }
 
-      // 事件绑定（与上一版本保持相同，此处省略重复代码）
+      // ========== 事件绑定 ==========
       document.getElementById('saveBtn').addEventListener('click',()=>{const d=document.getElementById('dateInput').value;const w=document.getElementById('wordInput').value.trim();if(!d||!w||isNaN(Number(w))||Number(w)<0)return alert('请输入有效日期和字数');getR()[d]=parseInt(w);if(!getTSD())getProject().thesisStartDate=d;saveData();document.getElementById('wordInput').value='';refreshAll();petSpeak(randomFrom(PET_SPEECHES.happy));});
       document.getElementById('applyGoalBtn').addEventListener('click',()=>{getProject().targetWords=parseInt(document.getElementById('targetWordInput').value)||15000;getProject().targetDate=document.getElementById('targetDateInput').value;saveData();refreshAll();});
       document.getElementById('addChapterBtn').addEventListener('click',()=>{const n=document.getElementById('newChapterName').value.trim();const g=parseInt(document.getElementById('newChapterGoal').value);if(!n||!g||g<=0)return;getC().push({name:n,goal:g,current:0});document.getElementById('newChapterName').value='';document.getElementById('newChapterGoal').value='';saveData();refreshAll();});
