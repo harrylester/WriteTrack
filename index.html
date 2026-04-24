@@ -185,14 +185,40 @@
     <div class="header-row">
       <h1>✍️ 在写了在写了 <span id="versionTag">2.0 Pro</span></h1>
       <div class="header-actions" style="position:relative;">
-        <div class="music-player">
-          <button class="music-btn" id="musicBtn" title="写作BGM">🎵</button>
-          <div class="music-dropdown" id="musicDropdown">
-            <h3>🎵 写作BGM（旋律模拟）</h3>
-            <div id="musicTrackList"></div>
-            <div class="music-now-playing" id="musicNowPlaying">选择音乐开始播放</div>
-          </div>
-        </div>
+       <!-- ========== 网易云音乐歌单播放器 ========== -->
+<div class="music-player" style="position:relative;">
+  <button class="music-btn" id="musicBtn" title="写作BGM">🎵</button>
+  <div class="music-dropdown" id="musicDropdown">
+    <h3>🎵 写作BGM歌单</h3>
+    <div id="musicTrackList">
+      <div class="music-track active" data-index="0">
+        <span class="track-icon">🎵</span>
+        <span class="track-name">Song 1</span>
+        <span class="track-desc">轻音乐</span>
+      </div>
+      <div class="music-track" data-index="1">
+        <span class="track-icon">🎵</span>
+        <span class="track-name">Song 2</span>
+        <span class="track-desc">轻音乐</span>
+      </div>
+      <div class="music-track" data-index="2">
+        <span class="track-icon">🎵</span>
+        <span class="track-name">Song 3</span>
+        <span class="track-desc">轻音乐</span>
+      </div>
+      <div class="music-track" data-index="3">
+        <span class="track-icon">🎵</span>
+        <span class="track-name">Song 4</span>
+        <span class="track-desc">轻音乐</span>
+      </div>
+    </div>
+    <div class="music-now-playing" id="musicNowPlaying">选择歌曲开始播放</div>
+    <!-- 网易云iframe播放器 -->
+    <div style="text-align:center;margin-top:0.5rem;">
+      <iframe id="neteasePlayer" frameborder="no" border="0" marginwidth="0" marginheight="0" width="260" height="52" src="https://music.163.com/outchain/player?type=2&id=2742628669&auto=0&height=32"></iframe>
+    </div>
+  </div>
+</div>
         <button class="icon-btn" id="syncMenuBtn" title="跨设备同步">🔄</button>
         <button class="icon-btn" id="themeMenuBtn" title="切换主题">🎨</button>
         <div class="dropdown-menu" id="themeDropdown">
@@ -532,84 +558,79 @@
       function refreshPersonality() { const so=Object.keys(getR()).sort();if(so.length<3){document.getElementById('personalityType').textContent='—';document.getElementById('personalityDesc').textContent='需要至少3天记录';return;}const deltas=[];for(let i=1;i<so.length;i++)deltas.push((getR()[so[i]]||0)-(getR()[so[i-1]]||0));const ad=Math.round(deltas.reduce((a,b)=>a+b,0)/deltas.length);const vol=Math.sqrt(deltas.reduce((s,v)=>s+(v-ad)**2,0)/deltas.length);const ms=(()=>{let max=1,cur=1;for(let i=1;i<so.length;i++){if((new Date(so[i])-new Date(so[i-1]))/86400000===1)cur++;else{max=Math.max(max,cur);cur=1;}}return Math.max(max,cur);})();const br=Math.round(deltas.filter(d=>d>ad*1.5).length/deltas.length*100);document.getElementById('statVolatility').textContent=vol>500?'高':vol>200?'中':'低';document.getElementById('statMaxStreak').textContent=ms+'天';document.getElementById('statBurst').textContent=br+'%';document.getElementById('statAvgDelta').textContent=ad+'/天';document.getElementById('personalityType').textContent=vol>800?'🎢 过山车':vol>400?'🌊 波浪':ad>500?'🚂 稳健':br>40?'⚡ 爆发':'🦉 混合';document.getElementById('personalityDesc').textContent='基于写作数据分析得出'; }
       function refreshBirthday() { const f=getTSD()||getFirstRecordDate();document.getElementById('birthdayDate').textContent=f||'—';if(f){const d=getDaysSinceStart();document.getElementById('birthdayAge').textContent=Math.floor(d/30)+'个月'+(d%30)+'天';document.getElementById('birthdayFirst').textContent=(getR()[f]||0).toLocaleString()+'字';document.getElementById('birthdayCurrent').textContent=getTotalWords().toLocaleString()+'字';document.getElementById('birthdayGrowth').textContent=(getTotalWords()-(getR()[f]||0)).toLocaleString()+'字';}const tw=Math.max(1,getTW());document.getElementById('milestoneList').innerHTML=[0.05,0.1,0.25,0.5,0.75,1,1.25,1.5].map(r=>{const v=Math.round(tw*r);const rch=getTotalWords()>=v;return`<span style="display:inline-block;margin:0.2rem;padding:0.2rem 0.5rem;border-radius:0.8rem;font-size:0.7rem;background:${rch?'var(--gold)':'var(--border)'};color:${rch?'#5e3a00':'var(--sub)'};">${v.toLocaleString()} ${rch?'✅':'🔒'}</span>`;}).join(''); }
 
-      // ========== 新音乐引擎（旋律/和弦） ==========
-      function createMelody(melody) {
-        if (noiseInterval) clearInterval(noiseInterval);
-        const AudioContext = window.AudioContext || window.webkitAudioContext;
-        if (!AudioContext) return;
-        const ctx = new AudioContext();
-        const gainNode = ctx.createGain();
-        gainNode.gain.value = 0.2;
-        gainNode.connect(ctx.destination);
-        let noteIndex = 0;
-        noiseInterval = setInterval(() => {
-          const osc = ctx.createOscillator();
-          osc.type = 'sine';
-          osc.frequency.value = melody[noteIndex % melody.length];
-          osc.connect(gainNode);
-          osc.start();
-          osc.stop(ctx.currentTime + 0.4);
-          noteIndex++;
-        }, 500);
-      }
+      // ========== 网易云音乐控制 ==========
+const NETEASE_SONGS = [
+  { id: '2742628669', name: 'Song 1', icon: '🎵', desc: '轻音乐' },
+  { id: '1830664549', name: 'Song 2', icon: '🎵', desc: '轻音乐' },
+  { id: '5248060', name: 'Song 3', icon: '🎵', desc: '轻音乐' },
+  { id: '1349964901', name: 'Song 4', icon: '🎵', desc: '轻音乐' }
+];
 
-      function createChordProgression(chords) {
-        if (noiseInterval) clearInterval(noiseInterval);
-        const AudioContext = window.AudioContext || window.webkitAudioContext;
-        if (!AudioContext) return;
-        const ctx = new AudioContext();
-        const gainNode = ctx.createGain();
-        gainNode.gain.value = 0.15;
-        gainNode.connect(ctx.destination);
-        let chordIndex = 0;
-        noiseInterval = setInterval(() => {
-          const chord = chords[chordIndex % chords.length];
-          chord.forEach(freq => {
-            const osc = ctx.createOscillator();
-            osc.type = 'sine';
-            osc.frequency.value = freq;
-            osc.connect(gainNode);
-            osc.start();
-            osc.stop(ctx.currentTime + 2);
-          });
-          chordIndex++;
-        }, 2500);
-      }
+let currentTrackIndex = 0;
+let isPlaying = false;
 
-      function playTrack(index) {
-        const track = MUSIC_TRACKS[index];
+function playTrack(index) {
+  currentTrackIndex = index;
+  isPlaying = true;
+  const song = NETEASE_SONGS[index];
+  // 更新iframe播放器
+  const iframe = document.getElementById('neteasePlayer');
+  if (iframe) {
+    iframe.src = `https://music.163.com/outchain/player?type=2&id=${song.id}&auto=1&height=32`;
+  }
+  updateMusicUI();
+  document.getElementById('musicNowPlaying').textContent = '正在播放：' + song.icon + ' ' + song.name;
+}
+
+function stopMusic() {
+  isPlaying = false;
+  const iframe = document.getElementById('neteasePlayer');
+  if (iframe) {
+    // 停止播放：加载一个空白页面
+    iframe.src = 'about:blank';
+    // 重新加载默认歌曲但不自动播放
+    setTimeout(() => {
+      iframe.src = `https://music.163.com/outchain/player?type=2&id=${NETEASE_SONGS[currentTrackIndex].id}&auto=0&height=32`;
+    }, 100);
+  }
+  updateMusicUI();
+  document.getElementById('musicNowPlaying').textContent = '选择歌曲开始播放';
+}
+
+function updateMusicUI() {
+  const btn = document.getElementById('musicBtn');
+  if (isPlaying) {
+    btn.classList.add('playing');
+  } else {
+    btn.classList.remove('playing');
+  }
+  document.querySelectorAll('#musicTrackList .music-track').forEach((el, i) => {
+    el.classList.toggle('active', i === currentTrackIndex && isPlaying);
+  });
+}
+
+function renderMusicTracks() {
+  const list = document.getElementById('musicTrackList');
+  list.innerHTML = NETEASE_SONGS.map((song, i) => `
+    <div class="music-track ${i === currentTrackIndex && isPlaying ? 'active' : ''}" data-index="${i}">
+      <span class="track-icon">${song.icon}</span>
+      <span class="track-name">${song.name}</span>
+      <span class="track-desc">${song.desc}</span>
+    </div>
+  `).join('');
+  
+  list.querySelectorAll('.music-track').forEach(el => {
+    el.addEventListener('click', function(e) {
+      e.stopPropagation();
+      const idx = parseInt(this.dataset.index);
+      if (idx === currentTrackIndex && isPlaying) {
         stopMusic();
-        if (track.type === 'melody') {
-          createMelody(track.melody);
-          currentTrack = index;
-          isPlaying = true;
-        } else if (track.type === 'chord') {
-          createChordProgression(track.chords);
-          currentTrack = index;
-          isPlaying = true;
-        }
-        updateMusicUI();
-        document.getElementById('musicNowPlaying').textContent = isPlaying ? '正在播放：' + track.icon + ' ' + track.name : '选择音乐开始播放';
+      } else {
+        playTrack(idx);
       }
-
-      function stopMusic() {
-        if (noiseInterval) { clearInterval(noiseInterval); noiseInterval = null; }
-        currentTrack = null; isPlaying = false;
-        updateMusicUI();
-        document.getElementById('musicNowPlaying').textContent = '选择音乐开始播放';
-      }
-
-      function updateMusicUI() {
-        const btn = document.getElementById('musicBtn');
-        if (isPlaying) btn.classList.add('playing'); else btn.classList.remove('playing');
-        document.querySelectorAll('.music-track').forEach((el, i) => { el.classList.toggle('active', i === currentTrack); });
-      }
-
-      function renderMusicTracks() {
-        const list = document.getElementById('musicTrackList');
-        list.innerHTML = MUSIC_TRACKS.map((t, i) => `<div class="music-track ${i===currentTrack?'active':''}" data-track="${i}"><span class="track-icon">${t.icon}</span><span class="track-name">${t.name}</span><span class="track-desc">${t.desc}</span></div>`).join('');
-        list.querySelectorAll('.music-track').forEach(el => { el.addEventListener('click', function(e) { e.stopPropagation(); const idx = parseInt(this.dataset.track); if (idx === currentTrack && isPlaying) stopMusic(); else playTrack(idx); document.getElementById('musicDropdown').classList.remove('show'); }); });
-      }
+    });
+  });
+}
 
       function refreshAll() { refreshDailyTab(); renderChapters(); refreshGarden(); refreshAdventure(); refreshMoodDiary(); renderNotes(); refreshPersonality(); refreshBirthday(); updateDocLinkUI(); updatePetStats(); }
 
